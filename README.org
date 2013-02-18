@@ -1,0 +1,7 @@
+* CFS: Download data from the CFS archive and CFS2 rolling updates.
+
+This is a collection of scripts for downloading data from both the CFS
+(Climate Forecast System) archive and the CFS2 rolling updates.
+Currently we are downloading a subset of CFS2 for the 1st and 15th
+day of each month.
+
