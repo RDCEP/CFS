@@ -5,3 +5,6 @@ This is a collection of scripts for downloading data from both the CFS
 Currently we are downloading a subset of CFS2 for the 1st and 15th
 day of each month.
 
+Scripts are tailored for clusters running SLURM but easily adapted to
+any system.
+
