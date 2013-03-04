@@ -16,8 +16,6 @@ cfsDates <-
     by= "-1 day",
     length.out= 6)
 
-strftime( cfsDates, format= "cfs.%Y%m%d")
-
 dataUrls <-
   with(
     expand.grid(
@@ -27,7 +25,8 @@ dataUrls <-
       hour= c( "00", "06", "12", "18"),
       var=  c(
         "prate", "tmax", "tmin", "dswsfc",
-        "crain", "q2m", "wnd10m")),
+        ## "crain",
+        "q2m", "wnd10m")),
     paste(
       base,
       strftime( date, format= "cfs.%Y%m%d"),

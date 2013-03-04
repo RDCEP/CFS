@@ -2,7 +2,7 @@
 
 #SBATCH --job-name=cfs2
 
-#SBATCH --workdir=/project/joshuaelliott/users/nbest/cfs
+#SBATCH --workdir=/project/joshuaelliott/cfs
 
 #SBATCH --time=60
 

@@ -4,7 +4,7 @@
 
 #SBATCH --job-name=cfsArchive
 
-#SBATCH --workdir=/project/joshuaelliott/users/nbest/cfs
+#SBATCH --workdir=/project/joshuaelliott/cfs
 
 # #SBATCH --time=12:00:00
 
