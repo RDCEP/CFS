@@ -1,6 +1,3 @@
-library( RCurl)
-library( XML)
-library( stringr)
 library( doMC)
 
 ## registerDoMC( cores= 4)
