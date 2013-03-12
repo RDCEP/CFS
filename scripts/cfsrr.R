@@ -14,7 +14,7 @@ noClobber <- TRUE
 
 baseUrl <- "http://nomads.ncdc.noaa.gov/modeldata/cmd_ts_9mon"
 
-cfsVars <- c( "dswsfc", "prate", "tmax", "tmin")
+cfsVars <- c( "dswsfc", "prate", "tmax", "tmin", "wnd1000")
 
 ## CFS archive does not account for leap days, so the sequence is
 ## somewhat irregular
@@ -87,7 +87,7 @@ writeCfsWgetCommands <- function( cfsUrls) {
     "--timestamping",
     "--no-host-directories",
     paste(
-      "--directory-prefix=data/cfs",
+      "--directory-prefix=data/cfsrr",
       str_match( cfsUrls, "/([0-9]{4})/")[,2],
       sep="/"),
     cfsUrls,

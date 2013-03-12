@@ -23,7 +23,7 @@ dataUrls <-
       var=  c(
         "prate", "tmax", "tmin", "dswsfc",
         ## "crain",
-        "q2m", "wnd10m")),
+        "q2m", "wnd10m", "wnd1000", "pressfc")),
     paste(
       base,
       strftime( date, format= "cfs.%Y%m%d"),

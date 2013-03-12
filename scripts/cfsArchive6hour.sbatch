@@ -14,6 +14,6 @@
 
 #SBATCH --exclusive
 
-R --slave -f scripts/cfsArchive.R
+R --slave -f scripts/cfsArchive6hour.R
 
 

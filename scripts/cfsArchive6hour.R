@@ -42,6 +42,7 @@ cfsDates <-
 
 writeCfsUrls <- function( cfsVar, cfsDate, md5= FALSE) {
   cfsUrlFormat <- paste(
+    baseUrl,
     cfsVar,
     "%Y%m",
     paste( cfsVar, "%Y%m%d%H", "time", "grb2", sep= "."),
