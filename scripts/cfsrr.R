@@ -14,7 +14,7 @@ noClobber <- TRUE
 
 baseUrl <- "http://nomads.ncdc.noaa.gov/modeldata/cmd_ts_9mon"
 
-cfsVars <- c( "dswsfc", "prate", "tmax", "tmin", "wnd1000")
+cfsVars <- c( "dswsfc", "prate", "tmax", "tmin", "wnd10m")
 
 ## CFS archive does not account for leap days, so the sequence is
 ## somewhat irregular

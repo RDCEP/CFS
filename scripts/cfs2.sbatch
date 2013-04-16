@@ -14,6 +14,10 @@
 
 #SBATCH --partition=westmere,sandyb
 
+#SBATCH --mail-type=ALL
+
+#SBATCH --mail-user=nbest,joshuaelliott
+
 sbatch --begin=tomorrow scripts/cfs2.sbatch
 R --slave -f scripts/cfs2.R
 

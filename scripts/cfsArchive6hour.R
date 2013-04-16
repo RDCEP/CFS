@@ -86,6 +86,11 @@ cfsWgetCommands <-
     cfsUrls,
     "2>&1")
 
+## TODO: cut yyyymm/ subdirs.  For now I said:
+## cd ../data/cfsr-rfl-ts9/prate
+## find . -type f -execdir mv \{\} .. \;
+## find . -type d -empty -delete
+
 setwd( "data")
 
 foreach(

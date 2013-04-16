@@ -1,33 +1,31 @@
 library( doMC)
 
-## registerDoMC( cores= 4)
-registerDoMC( cores= multicore:::detectCores())
+registerDoMC( cores= 4)
+## registerDoMC( cores= multicore:::detectCores())
 
-baseUrl <- "http://nomads.ncep.noaa.gov/pub/data/nccf/com/cfs/prod/cfs"
-
-## subDir <- "00/time_grib_01"
+baseUrl <- "http://cirrus.nmsu.edu:8080/thredds/fileServer/cfs"
 
 cfsDates <-
   seq(
-    from= Sys.Date() -1,
-    by= "-1 day",
-    length.out= 6)
+    from= as.Date( "2013-02-22"),
+    to= as.Date( "2011-09-17"),
+    by= "-1 day")
 
 dataUrls <-
   with(
     expand.grid(
       base= baseUrl,
       date= cfsDates,
-      run=  c( "01", "02", "03", "04"),
-      hour= c( "00", "06", "12", "18"),
+      run=  "01", ## c( "01", "02", "03", "04"),
+      hour= "00", ## c( "00", "06", "12", "18"),
       var=  c(
         "prate", "tmax", "tmin", "dswsfc",
         ## "crain",
-        "q2m", "wnd10m", "pressfc")),
+        "q2m", "wnd10m")),
     paste(
       base,
       strftime( date, format= "cfs.%Y%m%d"),
-      hour,
+      ## hour,
       sprintf( "time_grib_%s", run),
       paste(
         var, run,
@@ -50,11 +48,11 @@ wgetCommands <-
     "--continue",
     "--timestamping",
     "--no-host-directories",
-    "--cut-dirs=7",
+    "--cut-dirs=3",
     dataUrls,
     "2>&1")
 
-oldWd <- setwd( "data/cfs2")
+oldWd <- setwd( "data/cirrus.nmsu.edu")
 
 log <-
   foreach(
