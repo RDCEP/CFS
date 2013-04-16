@@ -1,0 +1,205 @@
+#+PROPERTY: results output verbatim
+#+PROPERTY: noweb yes
+
+
+* Noweb helper
+
+#+NAME: cdDataPath
+#+BEGIN_SRC sh 
+  cd ../data/cfsr-rfl-ts9/prate/
+#+END_SRC
+
+This saves me from having to use a session or specify long paths.
+Just add a noweb reference to any sh code block.
+
+* Inspect the raw data
+
+#+BEGIN_SRC sh
+  <<cdDataPath>>
+  wgrib2 -s 6hour/prate.1982010100.time.grb2 | head
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+1:0:d=1982010100:PRATE:surface:6 hour fcst:
+2:35795:d=1982010100:PRATE:surface:12 hour fcst:
+3:70896:d=1982010100:PRATE:surface:18 hour fcst:
+4:106472:d=1982010100:PRATE:surface:24 hour fcst:
+5:141655:d=1982010100:PRATE:surface:30 hour fcst:
+6:176858:d=1982010100:PRATE:surface:36 hour fcst:
+7:212466:d=1982010100:PRATE:surface:42 hour fcst:
+8:248220:d=1982010100:PRATE:surface:48 hour fcst:
+9:283885:d=1982010100:PRATE:surface:54 hour fcst:
+10:319279:d=1982010100:PRATE:surface:60 hour fcst:
+#+end_example
+
+* Set up the grid description
+
+#+NAME: griddes()
+#+BEGIN_SRC sh
+  cdo griddes ../../narr/data/nc/tmax/tmax_1979.nc 
+#+END_SRC
+
+#+RESULTS: griddes
+#+begin_example
+#
+# gridID 2
+#
+gridtype  = lonlat
+gridsize  = 460800
+xname     = longitude
+xlongname = longitude
+xunits    = degrees_east
+yname     = latitude
+ylongname = latitude
+yunits    = degrees_north
+xsize     = 960
+ysize     = 480
+xfirst    = 220.042
+xinc      = 0.0833333
+yfirst    = 20.0417
+yinc      = 0.0833333
+#+end_example
+
+#+BEGIN_SRC sh :results silent
+  <<cdDataPath>>
+  cat <<EOF > griddes
+  <<griddes()>>
+  EOF
+#+END_SRC
+
+* Aggregate to daily means
+
+Calculate the daily means of the precipitation rate in different
+formats so we can inspect the metadata in different ways.
+
+#+BEGIN_SRC sh :eval no
+  <<cdDataPath>>
+  cdo daymean 6hour/prate.1982010100.time.grb2 daily/prate.1982010100.time.grb2 2>&1
+  cdo -f nc4 daymean 6hour/prate.1982010100.time.grb2 daily/prate.1982010100.time.nc4 2>&1
+#+END_SRC
+
+#+RESULTS:
+: cdo daymean: Processed 88719360 values from 1 variable over 1216 timesteps ( 18.41s )
+: cdo daymean: Processed 88719360 values from 1 variable over 1216 timesteps ( 17.24s )
+
+#+BEGIN_SRC sh
+  <<cdDataPath>>
+  cdo remapnn,griddes \
+      -daymean 6hour/prate.1982010100.time.grb2 \
+      daily/prate.1982010100.time.grb2 2>&1
+  cdo -f nc4 remapnn,griddes \
+      -daymean 6hour/prate.1982010100.time.grb2 \
+      daily/prate.1982010100.time.nc4 2>&1
+#+END_SRC
+
+#+RESULTS:
+: cdo remapnn: Started child process "daymean 6hour/prate.1982010100.time.grb2 (pipe1.1)".
+: cdo(2) daymean: Processed 88719360 values from 1 variable over 1216 timesteps ( 61.88s )
+: cdo remapnn: Processed 22252800 values from 1 variable over 305 timesteps ( 61.89s )
+: cdo remapnn: Started child process "daymean 6hour/prate.1982010100.time.grb2 (pipe1.1)".
+: cdo(2) daymean: Processed 88719360 values from 1 variable over 1216 timesteps ( 55.47s )
+: cdo remapnn: Processed 22252800 values from 1 variable over 305 timesteps ( 55.47s )
+
+#+BEGIN_SRC sh
+  <<cdDataPath>>
+  wgrib2 -s daily/prate.1982010100.time.grb2 | head  
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+1:0:d=1982010100:PRATE:surface:18 hour fcst:
+2:633784:d=1982010100:PRATE:surface:42 hour fcst:
+3:1267568:d=1982010100:PRATE:surface:66 hour fcst:
+4:1901352:d=1982010100:PRATE:surface:90 hour fcst:
+5:2535136:d=1982010100:PRATE:surface:114 hour fcst:
+6:3168920:d=1982010100:PRATE:surface:138 hour fcst:
+7:3802704:d=1982010100:PRATE:surface:162 hour fcst:
+8:4436488:d=1982010100:PRATE:surface:186 hour fcst:
+9:5070272:d=1982010100:PRATE:surface:210 hour fcst:
+10:5704056:d=1982010100:PRATE:surface:234 hour fcst:
+#+end_example
+
+#+BEGIN_SRC sh
+  <<cdDataPath>>
+  ncdump -h daily/prate.1982010100.time.nc4
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+netcdf prate.1982010100.time {
+dimensions:
+	longitude = 960 ;
+	latitude = 480 ;
+	time = UNLIMITED ; // (305 currently)
+variables:
+	double longitude(longitude) ;
+		longitude:standard_name = "longitude" ;
+		longitude:long_name = "longitude" ;
+		longitude:units = "degrees_east" ;
+		longitude:axis = "X" ;
+	double latitude(latitude) ;
+		latitude:standard_name = "latitude" ;
+		latitude:long_name = "latitude" ;
+		latitude:units = "degrees_north" ;
+		latitude:axis = "Y" ;
+	double time(time) ;
+		time:standard_name = "time" ;
+		time:units = "hours since 1982-01-01 00:00:00" ;
+		time:calendar = "proleptic_gregorian" ;
+	float prate(time, latitude, longitude) ;
+		prate:long_name = "Precipitation rate" ;
+		prate:units = "kg m**-2 s**-1" ;
+		prate:param = "7.1.0" ;
+
+// global attributes:
+		:CDI = "Climate Data Interface version 1.5.9 (http://code.zmaw.de/projects/cdi)" ;
+		:Conventions = "CF-1.4" ;
+		:history = "Fri Apr 12 16:17:52 2013: cdo -f nc4 remapnn,griddes -daymean 6hour/prate.1982010100.time.grb2 daily/prate.1982010100.time.nc4" ;
+		:institution = "National Centers for Environmental Prediction" ;
+		:CDO = "Climate Data Operators version 1.5.9rc1 (http://code.zmaw.de/projects/cdo)" ;
+}
+#+end_example
+
+
+* Convert all of the raw data
+  :PROPERTIES:
+  :session:  *R*
+  :END:
+
+#+BEGIN_SRC R
+  library( stringr)
+  library( doMC)
+  
+  registerDoMC( 8)
+  
+  setwd( "data/cfsr-rfl-ts9/prate/")
+  
+  cfsSixHourPrateFiles <-
+    list.files(
+      path= "6hour",
+      full.names= TRUE,
+      recursive= TRUE)
+  
+  cfsDailyPrateFiles <- 
+    str_replace(
+      str_replace(
+        cfsSixHourPrateFiles,
+        "6hour", "daily"),
+      "grb2", "nc4")
+  
+  cdoCommands <-
+    sprintf(
+      "cdo -f nc4 remapnn,griddes -daymean %s %s 2>&1",
+      cfsSixHourPrateFiles,
+      cfsDailyPrateFiles)
+  
+  
+  cdoOutput <-
+    foreach( cdo= cdoCommands) %dopar% {
+      system( cdo, intern= TRUE)
+    }
+  names( cdoOutput) <- basename( cfsDailyPrateFiles)
+  
+  
+#+END_SRC
