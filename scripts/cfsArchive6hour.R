@@ -3,8 +3,8 @@ library( doMC, quietly= TRUE)
 library( lubridate)
 
 registerDoMC( cores= multicore:::detectCores())
-## options( internet.info= 0)
-
+## registerDoMC( 8)
+## options( error= recover)
 
 ## noClobber currently has no effect
 
@@ -29,11 +29,22 @@ everyThirtyJulianDaysNoLeapDays <- function( year) {
   names( dates) <- sprintf( "%4d.%02d", year, days %/% 30 + 1)
   dates
 }
+
+everyFiveJulianDaysNoLeapDays <- function( year) {
+  interval <- c(
+    1, rep( 5, times= 11),
+    ifelse( leap_year( year), 6, 5),
+    rep( 5, times= 365/5 -13))
+  days <- cumsum( interval)
+  dates <- as.POSIXct( paste( year, days), format= "%Y %j", tz= "GMT")
+  names( dates) <- sprintf( "%4d.%02d", year, days)
+  dates
+}
               
 cfsDates <- foreach(
   year= 1982:2009,
   .combine= c) %do% {
-    everyThirtyJulianDaysNoLeapDays( year)
+    everyFiveJulianDaysNoLeapDays( year)
   }
 
 cfsDates <-
@@ -75,28 +86,58 @@ cfsUrls <-
 cfsWgetCommands <-
   paste(
     "wget",
-    "--recursive",
+    ## "--recursive",
     "--progress=dot:mega", ## "--no-verbose",
     "--retry-connrefused",
-    "--continue",
+    "--waitretry=20",
+    "--tries=20",
+    ## "--continue",
     ## "--password=nbest@ci.uchicago.edu",
     "--timestamping",
     "--no-host-directories",
-    "--cut-dir 1",
+    ## "--cut-dir 1",
+    paste(
+      "--directory-prefix=data",
+      str_match( cfsUrls, "(cfsr-rfl-ts9/[^/]+)/")[,2],
+      "6hour",
+      sep= "/"),
     cfsUrls,
     "2>&1")
 
-## TODO: cut yyyymm/ subdirs.  For now I said:
-## cd ../data/cfsr-rfl-ts9/prate
-## find . -type f -execdir mv \{\} .. \;
-## find . -type d -empty -delete
-
-setwd( "data")
-
-foreach(
-  cfsWgetCommand= cfsWgetCommands) %dopar% {
-    cat( system( cfsWgetCommand, intern= TRUE), sep= "\n")
-  }
-
+repeat {
+  cfsWgetOutput <- 
+    foreach(
+      cfsWgetCommand= cfsWgetCommands) %dopar% {
+        Sys.sleep( 3 * ( runif( 1) + 0.5))
+        system( cfsWgetCommand, intern= TRUE)
+      }
+  cfsWgetSummary <-
+    sapply(
+      cfsWgetOutput,
+      function( wgetOutput) {
+        wgetOutput[ length( wgetOutput) -1]})
+  names( cfsWgetSummary) <- cfsUrls
+  cfsWgetErrors <-
+    length( which( str_detect( cfsWgetSummary, "ERROR (503|404)")))
+  cat(
+    unlist( cfsWgetOutput),
+    "\n",
+    "Summary:",
+    "\n",
+    cfsWgetSummary,
+    "\n",
+    paste(
+      "503 or 404 Errors:",
+      cfsWgetErrors,
+      ". . .",
+      ifelse(
+        cfsWgetErrors,
+        "retrying.",
+        "done.")),
+    sep= "\n")
+  if( !cfsWgetErrors) break
+  ## break
+}
+    
 
 ## TODO: create symlinks to name by pseudo-months

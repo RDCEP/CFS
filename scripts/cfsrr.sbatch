@@ -6,7 +6,7 @@
 
 #SBATCH --workdir=/project/joshuaelliott/cfs
 
-#SBATCH --time=60
+#SBATCH --time=4:00:00
 
 #SBATCH --output=logs/cfsrr-%j.out
 

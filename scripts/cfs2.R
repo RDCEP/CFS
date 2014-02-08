@@ -47,7 +47,7 @@ wgetCommands <-
     "--progress=dot:mega",
     ## "--no-verbose",
     "--retry-connrefused",
-    "--continue",
+    ## "--continue",
     "--timestamping",
     "--no-host-directories",
     "--cut-dirs=7",
